@@ -1,26 +1,51 @@
 """
 Python3 script for preprocessing MCSQ data for the first case study.
-Before running the script, install requirements: pandas and nltk
+Before running the script, install requirements: pandas and gensim
 Author: Danielly Sorato 
 Author contact: danielly.sorato@gmail.com
 """ 
-
+import string
 import os
 import sys
 import pandas as pd
-import nltk
+import gensim
+import re
+
+def text_cleaning(text):
+	if isinstance(text, str):
+		text = text.lower()
+		text = text.translate(str.maketrans('', '', string.punctuation))
+		text = gensim.utils.simple_preprocess(text, deacc=True)
+		text = ' '.join(text)
+	else:
+		text = ''
+	
+
+	return text
 
 
+def clean_dataframe(df):
+	column_names = df.columns
+	text = column_names[-1]
+	cleaned_df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', text])
+	for i, row in df.iterrows():
+		clean_text = text_cleaning(row[text])
+		if isinstance(clean_text, str) and clean_text != '':
+			data = {'survey_item_ID': row['survey_item_ID'],'Study': row['Study'],'module': row['module'],
+			'item_type': row['item_type'],'item_name': row['item_name'],'item_value': row['item_value'], text:clean_text}
+			cleaned_df = cleaned_df.append(data, ignore_index=True)
+
+	return cleaned_df
 
 def concatenate_by_country(file_lists):
 	for file_list in file_lists:
-		print(file_list)
-		print(file_list[1:])
 		df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', file_list[0]])
 		for file in file_list[1:]:
+			print(file_list[1:])
 			questionnaire = pd.read_csv(file)
 			df =  df.append(questionnaire,ignore_index=True)
-		df.to_csv(folder_path+'/'+file_list[0]+".csv", index=False)
+		cleaned_df = clean_dataframe(df)
+		cleaned_df.to_csv(folder_path+'/'+file_list[0]+".tsv", sep='\t', index=False)
 
 
 
