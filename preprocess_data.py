@@ -14,9 +14,10 @@ import re
 def text_cleaning(text):
 	if isinstance(text, str):
 		text = text.lower()
-		text = text.translate(str.maketrans('', '', string.punctuation))
-		text = gensim.utils.simple_preprocess(text, deacc=True)
-		text = ' '.join(text)
+		text = re.sub("[^\w\d'\d\-\d\(a)/a\s]+",'',text)
+		# text = text.translate(str.maketrans('', '', string.punctuation))
+		# text = gensim.utils.simple_preprocess(text, deacc=True)
+		# text = ' '.join(text)
 	else:
 		text = ''
 	
