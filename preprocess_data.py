@@ -39,15 +39,88 @@ def clean_dataframe(df):
 	return cleaned_df
 
 def concatenate_by_country(file_lists):
+	df_dict = dict()
 	for file_list in file_lists:
 		df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', file_list[0]])
 		for file in file_list[1:]:
-			print(file_list[1:])
+			print(file)
 			questionnaire = pd.read_csv(file)
 			df =  df.append(questionnaire,ignore_index=True)
 		cleaned_df = clean_dataframe(df)
-		cleaned_df.to_csv(folder_path+'/'+file_list[0]+".tsv", sep='\t', index=False)
+		df_dict[file_list[0]] = cleaned_df
+		
 
+	intersection = compute_intersection(df_dict)
+	for k,v in list(df_dict.items()):
+		df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', k])
+
+		r1 = v[v['Study'].str.contains("ESS_R01")]
+		print(r1)
+		intersection_r1 = intersection[intersection['Study'].str.contains("ESS_R01")]
+		print(intersection_r1)
+		intersection_r1_item_names = intersection_r1.item_name.unique()
+		print(intersection_r1_item_names)
+		r1 = r1[r1['item_name'].isin(intersection_r1_item_names)]
+		print(r1)
+
+		df =  df.append(r1,ignore_index=True)
+
+		r2 = v[v['Study'].str.contains("ESS_R02")]
+		intersection_r2 = intersection[intersection['Study'].str.contains("ESS_R02")]
+		intersection_r2_item_names = intersection_r2.item_name.unique()
+		r2 = r2[r2['item_name'].isin(intersection_r2_item_names)]
+		df =  df.append(r2,ignore_index=True)
+
+		r3 = v[v['Study'].str.contains("ESS_R03")]
+		intersection_r3 = intersection[intersection['Study'].str.contains("ESS_R03")]
+		intersection_r3_item_names = intersection_r3.item_name.unique()
+		r3 = r3[r3['item_name'].isin(intersection_r3_item_names)]
+		df =  df.append(r3,ignore_index=True)
+
+		r4 = v[v['Study'].str.contains("ESS_R04")]
+		intersection_r4 = intersection[intersection['Study'].str.contains("ESS_R04")]
+		intersection_r4_item_names = intersection_r4.item_name.unique()
+		r4 = r4[r4['item_name'].isin(intersection_r4_item_names)]
+		df =  df.append(r4,ignore_index=True)
+
+		r5 = v[v['Study'].str.contains("ESS_R05")]
+		intersection_r5 = intersection[intersection['Study'].str.contains("ESS_R05")]
+		intersection_r5_item_names = intersection_r5.item_name.unique()
+		r5 = r5[r5['item_name'].isin(intersection_r5_item_names)]
+		df =  df.append(r5,ignore_index=True)
+
+		r6 = v[v['Study'].str.contains("ESS_R06")]
+		intersection_r6 = intersection[intersection['Study'].str.contains("ESS_R06")]
+		intersection_r6_item_names = intersection_r6.item_name.unique()
+		r6 = r6[r6['item_name'].isin(intersection_r6_item_names)]
+		df =  df.append(r6,ignore_index=True)
+
+		evs = v[v['Study'].str.contains("EVS_")]
+		intersection_evs = intersection[intersection['Study'].str.contains("EVS_")]
+		intersection_evs_item_names = intersection_evs.item_name.unique()
+		evs = evs[evs['item_name'].isin(intersection_evs_item_names)]
+		df =  df.append(evs,ignore_index=True)
+
+		df.to_csv(k+".tsv", sep='\t', index=False)
+
+
+	return df_dict
+
+def compute_intersection(dictionary):
+	reference = dictionary['ENG_GB']
+	i = 0
+	for k,v in list(dictionary.items()):
+		if k !='ENG_GB':
+			if i==0:
+				merged = pd.merge(reference, v, how="inner", on=["Study", "item_name"])
+			else:
+				merged = pd.merge(merged, v, how="inner", on=["Study", "item_name"])
+
+			i = i+1
+
+	return merged
+
+	
 
 
 def main(folder_path):
@@ -86,15 +159,16 @@ def main(folder_path):
 				else:
 					fre_fr_files.append(file)
 			elif 'ENG' in file:
-				if 'IE' in file:
-					eng_ie_files.append(file)
-				elif 'GB' in file:
+				if 'GB' in file:
 					eng_gb_files.append(file)
+				elif 'IE' in file:
+					eng_ie_files.append(file)
 				else:
 					eng_source_files.append(file)
 
-	concatenate_by_country([spanish_files,norwegian_files,ger_at_files,ger_ch_files,ger_de_files, fre_be_files,
+	df_dict = concatenate_by_country([spanish_files,norwegian_files,ger_at_files,ger_ch_files,ger_de_files, fre_be_files,
 		fre_ch_files, fre_fr_files, eng_ie_files, eng_gb_files, eng_source_files])
+	# df_dict = concatenate_by_country([spanish_files,norwegian_files,eng_gb_files])
 
 
 if __name__ == "__main__":
