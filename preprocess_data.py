@@ -107,7 +107,7 @@ def main(folder_path):
 	eng_source_files = ['ENG_SOURCE']
 
 	for index, file in enumerate(files):
-		if file.endswith(".csv") or file=='EVS_R04_2008_ENG_SOURCE.tsv':
+		if file.endswith(".csv"):
 			if 'SPA' in file:
 				spanish_files.append(file)
 			elif 'NOR' in file:
