@@ -12,11 +12,12 @@ def main(folder_path):
 			dict_item_names[file] = data.item_name.unique()
 
 	
-	reference = dict_item_names['ENG_GB_r06.tsv']
+	reference = dict_item_names['ENG_GB_r01.tsv']
 	
 	for k,v in list(dict_item_names.items()):
-		if k !='ENG_GB_r06.tsv':
-			print(list(set(reference) - set(v)))
+		if k !='ENG_GB_r01.tsv':
+			print(v, reference)
+			print(list(set(v)-set(reference)))
 
 if __name__ == "__main__":
 	folder_path = str(sys.argv[1])

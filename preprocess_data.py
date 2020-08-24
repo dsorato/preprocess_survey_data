@@ -14,7 +14,32 @@ import re
 def text_cleaning(text):
 	if isinstance(text, str):
 		text = text.lower()
-		text = re.sub("[^\w\d'\d\-\d\(a)/a\s]+",'',text)
+		text = re.sub("\?",'',text)
+		text = re.sub(",",'',text)
+		text = re.sub("\.",'',text)
+		text = re.sub("\.\.\.",'',text)
+		text = re.sub("!",'',text)
+		text = re.sub('"','',text)
+		text = re.sub('\d','',text)
+		text = re.sub('⁄','',text)
+		text = re.sub('/','',text)
+		text = re.sub('”','',text)
+		text = re.sub('¿','',text)
+		text = re.sub('å','å', text)
+		text = re.sub('–', ' ', text)
+		text = re.sub('ü','ü', text)
+		text = re.sub('-',' ', text)
+		text = re.sub('ö','ö', text)
+		text = re.sub('ä','ä', text)
+		text = re.sub('Ä','ä', text)
+
+		
+
+		" ".join(text.split())
+
+		
+
+		# text = re.sub("[^\w\d'\d\-\d\(a)/a\s]+",'',text)
 		# text = text.translate(str.maketrans('', '', string.punctuation))
 		# text = gensim.utils.simple_preprocess(text, deacc=True)
 		# text = ' '.join(text)
@@ -30,6 +55,7 @@ def clean_dataframe(df):
 	text = column_names[-1]
 	cleaned_df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', text])
 	for i, row in df.iterrows():
+		# clean_text = row[text]
 		clean_text = text_cleaning(row[text])
 		if isinstance(clean_text, str) and clean_text != '':
 			data = {'survey_item_ID': row['survey_item_ID'],'Study': row['Study'],'module': row['module'],
@@ -44,7 +70,7 @@ def concatenate_by_country(file_lists):
 		df = pd.DataFrame(columns=['survey_item_ID','Study','module','item_type','item_name','item_value', file_list[0]])
 		for file in file_list[1:]:
 			print(file)
-			questionnaire = pd.read_csv(file)
+			questionnaire = pd.read_csv(file, encoding = 'utf8')
 			df =  df.append(questionnaire,ignore_index=True)
 		cleaned_df = clean_dataframe(df)
 		df_dict[file_list[0]] = cleaned_df
@@ -86,7 +112,7 @@ def filter_data(df_dict):
 		df =  df.append(r1,ignore_index=True)
 
 
-		df.to_csv(k+"_r06.tsv", sep='\t', index=False)
+		df.to_csv(k+"_r06.tsv", sep='\t',encoding='utf-8-sig', index=False)
 		del df
 
 
@@ -96,7 +122,7 @@ def main(folder_path):
 	files = os.listdir(folder_path)
 	spanish_files = ['SPA_ES']
 	norwegian_files = ['NOR_NO']
-	ger_at_files = ['GER_AT']
+	# ger_at_files = ['GER_AT']
 	ger_ch_files = ['GER_CH']
 	ger_de_files = ['GER_DE']
 	fre_be_files = ['FRE_BE']
@@ -115,8 +141,8 @@ def main(folder_path):
 			elif 'GER' in file:
 				if 'CH' in file:
 					ger_ch_files.append(file)
-				elif 'AT' in file:
-					ger_at_files.append(file)
+				# elif 'AT' in file:
+				# 	ger_at_files.append(file)
 				else:
 					ger_de_files.append(file)
 			elif 'FRE' in file:
@@ -134,7 +160,9 @@ def main(folder_path):
 				else:
 					eng_source_files.append(file)
 
-	df_dict = concatenate_by_country([spanish_files,norwegian_files,ger_at_files,ger_ch_files,ger_de_files, fre_be_files,
+	# df_dict = concatenate_by_country([spanish_files,norwegian_files,ger_at_files,ger_ch_files,ger_de_files, fre_be_files,
+	# 	fre_ch_files, fre_fr_files, eng_ie_files, eng_gb_files, eng_source_files])
+	df_dict = concatenate_by_country([spanish_files,norwegian_files,ger_ch_files,ger_de_files, fre_be_files,
 		fre_ch_files, fre_fr_files, eng_ie_files, eng_gb_files, eng_source_files])
 	filter_data(df_dict)
 	# df_dict = concatenate_by_country([spanish_files,norwegian_files,eng_gb_files])
